@@ -7,12 +7,15 @@ import sys
 sys.path.append(os.path.abspath("."))
 
 # raw data
-raw_data_path = "./data/raw"
+raw_data_path = r"./data/raw"
 
 # cv1 = pd.read_csv('%s/geoplaces2.csv'%raw_data_path, encoding = "latin1")
 # cv1 = cv1.drop('name', axis =1)
 
 # export data
+
+interim_data_path = r"./data/interim"
+output_data_path = r"./data/processed"
 
 
 
