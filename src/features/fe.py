@@ -47,8 +47,122 @@ def userDataFactroy():
     return df_user
 
 def rastaurantDataFactroy():
-    pass
+    df_storeGeo =  data_reader.storeGeo()
+    df_storeCuisine =  data_reader.storeCuisine()
+    df_storeHours =  data_reader.storeHours()
+    df_storeParking =  data_reader.storeParking()
+    df_storePayment = data_reader.storePayment()
 
+    df_store = df_storeGeo.merge(df_storeCuisine, on =  'placeID', how = 'left')
+    print(df_store.shape)
+
+    #########################################################
+    # dealing with multiple row of one attri
+
+    store_hours_dict = dict() # (shopid : {day : hour})
+
+    for i in df_storeHours.values:
+        if i[0] not in store_hours_dict:
+            store_hoursByday_dict = dict()
+            store_hours_dict[i[0]] = store_hoursByday_dict
+            i[2] = i[2].strip().split(';')
+            i[2].pop()
+            i[1] = str(i[1]).split(';')
+            i[1].pop()
+            for day in i[2]:
+                store_hours_list = set()
+                store_hoursByday_dict[day] = store_hours_list
+                for hr in i[1]:
+                    store_hours_list.add(hr)
+        else:
+            i[2] = i[2].strip().split(';')
+            i[2].pop()
+            i[1] = str(i[1]).strip().split(';')
+            i[1].pop()
+            for day in i[2]:
+                if day not in store_hours_dict[i[0]]:
+                    store_hours_list = set()
+                    store_hours_dict[i[0]][day] = store_hours_list
+                    for hr in i[1]:
+                        store_hours_list.add(hr)
+    full_list = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    for i in store_hours_dict.keys():
+        if len(store_hours_dict[i].keys()) < 7:
+            lack_list = list()
+            for full in full_list:
+                if full not in store_hours_dict[i].keys():
+                    lack_list.append(full)
+            for lack in lack_list:
+                store_hours_dict[i][lack] = ''
+
+
+    store_hours_dict_mon = [ store_hours_dict[key]['Mon'] for key in store_hours_dict.keys()]
+    store_hours_dict_tue = [ store_hours_dict[key]['Tue'] for key in store_hours_dict.keys()]
+    store_hours_dict_wed = [ store_hours_dict[key]['Wed'] for key in store_hours_dict.keys()]
+    store_hours_dict_thu = [ store_hours_dict[key]['Thu'] for key in store_hours_dict.keys()]
+    store_hours_dict_fri = [ store_hours_dict[key]['Fri'] for key in store_hours_dict.keys()]
+    store_hours_dict_sat = [ store_hours_dict[key]['Sat'] for key in store_hours_dict.keys()]
+    store_hours_dict_sun = [ store_hours_dict[key]['Sun'] for key in store_hours_dict.keys()]
+    store_id = [x for x in store_hours_dict.keys()]
+    df_storeHours = pd.DataFrame({"placeID":store_id,
+                                  "mon_hours":store_hours_dict_mon,
+                                  "tue_hours":store_hours_dict_tue,
+                                  "wed_hours":store_hours_dict_wed,
+                                  "thu_hours":store_hours_dict_thu,
+                                  "fri_hours":store_hours_dict_fri,
+                                  "sat_hours":store_hours_dict_sat,
+                                  "sun_hours":store_hours_dict_sun,
+                                })
+    df_storeHours.to_csv('%s/df_storeHours.csv'%config.interim_data_path, index = False)
+
+    #########################################################
+    # dealing with parking issue of that dataset
+
+    store_parking_dict = dict()
+    for i in df_storeParking.values:
+        if i[0] not in store_parking_dict:
+            store_parking_dict[i[0]] = set()
+            for park in i[1]:
+                store_parking_dict[i[0]].add(i[1])
+        else:
+            store_parking_dict[i[0]].add(i[1])
+    id_list = list()
+    park_list = list()
+    for store_id, park in store_parking_dict.items():
+        id_list.append(store_id)
+        park_list.append(park)
+
+    df_store_parking = pd.DataFrame({'placeID': id_list,
+                                     'park' : park_list})
+    
+    #########################################################
+    # dealing with storePayment issue of that dataset  
+
+    for i in df_storePayment.values:
+        print(i)
+
+
+        
+    
+
+    
+
+
+
+
+
+
+        
+
+
+
+    
+    # df_store = df_store.merge(df_storeHours, on =  'placeID', how = 'left')
+    # print(df_store.shape)
+
+
+    
 
 if __name__ == "__main__":
-    userDataFactroy()
+    # userDataFactroy()
+    rastaurantDataFactroy()
