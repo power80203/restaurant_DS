@@ -17,7 +17,7 @@ raw_data_path = r"./data/raw"
 interim_data_path = r"./data/interim"
 output_data_path = r"./data/processed"
 
-
+fig_report_path = r"./reports/figures"
 
 
 
