@@ -37,8 +37,8 @@ def missing_data(data_frame):
     return missing_data
 
 def deal_synonyms(i, dict_synonyms):
-    if i in dict_synonyms:
-        i = dict_synonyms[i]
+    if i.strip() in dict_synonyms:
+        i = dict_synonyms[i.strip()]
     return i
 
 if __name__ == "__main__":
