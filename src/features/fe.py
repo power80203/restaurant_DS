@@ -38,10 +38,37 @@ def userDataFactroy():
         payment = [str(x) for x in value]
         str_temp = ','.join(payment)
         payment_list.append(str_temp)
+ 
+    number_payment = [len(i.split(',')) if len(i.split(',')) else 1 for i in payment_list]
     
-    df_userpayment = pd.DataFrame({"userID":id_list, "Upayment":payment_list})
+    df_userpayment = pd.DataFrame({"userID":id_list, "Upayment":payment_list, 'num_of_Upayment' : number_payment})
     
     df_user = df_user.merge(df_userpayment, left_on='userID', right_on='userID', how = 'left')
+    print(df_user.shape)
+
+    # dealing with user cusine
+    user_cusine_dict = dict()
+    for i in df_userRcusine.values:
+        if i[0] not in user_cusine_dict:
+            user_cusine_list = list()
+            user_cusine_dict[i[0]] = user_cusine_list
+            user_cusine_dict[i[0]].append(i[1])
+        else:
+            user_cusine_dict[i[0]].append(i[1])
+        # print(user_payment_dict) 
+
+    id_list = list()
+    cusine_list = list()
+
+    for key, value in user_cusine_dict.items():
+        id_list.append(key)
+        tmp = [str(x) for x in value]
+        str_temp = ','.join(tmp)
+        cusine_list.append(str_temp)
+    
+    df_user_cusine = pd.DataFrame({"userID":id_list, "user_cusine":cusine_list})
+    
+    df_user = df_user.merge(df_user_cusine, left_on='userID', right_on='userID', how = 'left')
     print(df_user.shape)
 
     df_user.to_csv('%s/user_merged.csv'%config.interim_data_path, index = False)
@@ -89,8 +116,11 @@ def rastaurantDataFactroy():
         id_list.append(i)
         cuisin_list.append(c)
 
+    number_of_store_cuisin = [ (len(i)) for i in cuisin_list ]
+
     df_storeCuisine = pd.DataFrame({'placeID':id_list,
-                                    'cuisin' : cuisin_list
+                                    'store_cuisin' : cuisin_list,
+                                    'number_of_store_cuisin' : number_of_store_cuisin,
                                   })
 
     df_store = df_storeGeo.merge(df_storeCuisine, on =  'placeID', how = 'left')
@@ -222,9 +252,18 @@ def rastaurantDataFactroy():
                                     "payment" : payment_list
 
                                    })
+    
+    #add payment
+
+    payment_methods = [ len(i) if ( not isinstance(i, float)) and (len(i) >= 1) else 1 for i in df_storePayment['payment'].values ]
+
+    df_payment_methods = pd.DataFrame({'payment_methods' : payment_methods})
+
+    df_storePayment = pd.concat([df_storePayment , df_payment_methods], axis =1)
 
     # merge
     df_store = df_store.merge(df_storePayment, on =  'placeID', how = 'left')
+    df_store['payment_methods'] = df_store['payment_methods'].fillna(1)
     print(df_store.shape)
     df_store.to_csv('%s/store_merged.csv'%config.interim_data_path, index = False)
     
@@ -241,34 +280,52 @@ def mergred_store_and_user():
     
     print(df_merged.shape)
 
-    # create new demension
-    distance = []
-    for i in df_merged.values:
-        distance.append(utli.computeGeoDistance(i[5], i[6], i[24], i[25]))
+    # # create new demension
+    # distance = []
+    # for i in df_merged.values:
+    #     distance.append(utli.computeGeoDistance(i[5], i[6], i[24], i[25]))
 
-    df_distance = pd.DataFrame({'distance_between_user_and_store' : distance})
+    # df_distance = pd.DataFrame({'distance_between_user_and_store' : distance})
 
-    df_merged = pd.concat([df_merged, df_distance], axis =1)
+    # df_merged = pd.concat([df_merged, df_distance], axis =1)
 
     print(df_merged.shape)
 
-    print('start to filter out outlier')
-
     #1 filter out unemployment
-    df_merged = df_merged[df_merged['activity'] != 'unemployed']
+    # df_merged = df_merged[df_merged['activity'] != 'unemployed']
 
     #2 replace synonyms for city
     city_synonyms_dict = dict()    
     city_synonyms = pd.read_csv('./src/features/city.csv')
+
     for i in city_synonyms.values:
         city_synonyms_dict[i[0]] = i[1]
-
+    
+ 
     df_merged['store_city'] = df_merged['store_city'].apply(lambda x :utli.deal_synonyms(x, city_synonyms_dict))
-    print('fe267 還沒處理完')
-    sys.exit()
+    
+    # add store cuision math
+
+    tmp_cuisine_match = list()
+
+    for match in range(df_merged['user_cusine'].shape[0]):
+        if isinstance(df_merged['store_cuisin'][match], float):
+            tmp_cuisine_match.append(0)
+            continue
+        if df_merged['user_cusine'][match] in df_merged['store_cuisin'][match]:
+            tmp_cuisine_match.append(1)
+        else:
+            tmp_cuisine_match.append(0)
+        
+    df_cuisine_match = pd.DataFrame({'cuisine_match': tmp_cuisine_match})
+
+    df_merged = pd.concat([df_merged, df_cuisine_match], axis = 1)
+    
+    # remove ? as nan
+    df_merged = df_merged.replace('?', np.nan)
 
     try:
-        df_merged.to_csv('%s/df_merged.csv'%config.interim_data_path, index = False)
+        df_merged.to_csv('%s/merged_data.csv'%config.interim_data_path, index = False)
     except Exception as e:
         print(e)
     
