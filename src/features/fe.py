@@ -281,14 +281,15 @@ def mergred_store_and_user():
     
     print(df_merged.shape)
 
-    # # create new demension
-    # distance = []
-    # for i in df_merged.values:
-    #     distance.append(utli.computeGeoDistance(i[5], i[6], i[24], i[25]))
+    # create new demension
+    distance = [ ]
+    df_merged_tmp = df_merged[['latitude_x', 'longitude_x', 'latitude_y', 'longitude_y']]
+    for i in df_merged_tmp.values:
+        distance.append(utli.computeGeoDistance(i[0], i[1], i[2], i[3]))
 
-    # df_distance = pd.DataFrame({'distance_between_user_and_store' : distance})
+    df_distance = pd.DataFrame({'distance_between_user_and_store' : distance})
 
-    # df_merged = pd.concat([df_merged, df_distance], axis =1)
+    df_merged = pd.concat([df_merged, df_distance], axis =1)
 
     print(df_merged.shape)
 
@@ -321,7 +322,7 @@ def mergred_store_and_user():
     df_cuisine_match = pd.DataFrame({'cuisine_match': tmp_cuisine_match})
 
     df_merged = pd.concat([df_merged, df_cuisine_match], axis = 1)
-    
+
     # remove ? as nan
     df_merged = df_merged.replace('?', np.nan)
 

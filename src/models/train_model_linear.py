@@ -33,6 +33,7 @@ from src.utli import utli
 # read data
 df_main_ori = fe.mergred_store_and_user()
 
+df_main_ori['new_rating'] = df_main_ori['rating'] + df_main_ori['food_rating'] + df_main_ori['service_rating']
 
 print("original data", df_main_ori.shape)
 
@@ -59,10 +60,10 @@ modeling_list = ['smoker', 'drink_level', 'budget', 'store_price',
                 'park',
                 ]
 
-target = 'rating'
+target = 'new_rating'
 
 # add numeric vars
-modeling_numeric_list = ['birth_year', 'latitude_y', 'longitude_y', 'latitude_x', 'longitude_x',
+modeling_numeric_list = ['birth_year', 
                         #  'payment_methods',
                           #'number_of_store_cuisin',#'cuisine_match',
                         'num_of_Upayment', 
@@ -392,13 +393,75 @@ def emsemble(X_train, X_test, y_train, y_test):
 
     print("acc by emsemble model", accuracy_score(result, y_test))
 
+def ann_linear(X_train, X_test, y_train, y_test):
+    ##################################### DL
+ 
+    import keras
+    from keras.models import Sequential
+    from keras.layers import Dense
+    from keras.layers import Dropout
+    # Initialising the ANN
+    classifier = Sequential()
+
+    # Adding the input layer and the first hidden layer
+    dacay = 1.5
+    input_number = X_train.shape[1]
+    while True:
+        if input_number < 5:
+            classifier.add(Dense(output_dim = 1, activation = 'relu'))
+            break
+        else:
+            classifier.add(Dense(output_dim = int(input_number / dacay), activation = 'selu', 
+                                 init = 'uniform', input_dim = input_number, 
+                                 ))
+                                #  kernel_regularizer=regularizers.l1(0.1)
+            # classifier.add(Dropout(0.1))
+
+        input_number = int(input_number / dacay)
+
+    # classifier.add(Dropout(0.5))
+    # # Adding the second hidden layer
+    # classifier.add(Dense(output_dim = 15, init = 'uniform', activation = 'relu'))
+    # classifier.add(Dropout(0.5))
+    # # Adding the output layer
+    # classifier.add(Dense(output_dim = 2, init = 'uniform', activation = 'softmax'))
+    # earlystopper = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15)
+
+    # Compiling the ANN
+    SGD = keras.optimizers.SGD(lr = 0.1, momentum=0.0, decay=0.0, nesterov=False)
+    classifier.compile(optimizer = 'RMSprop', loss = 'mse', 
+                    metrics = ['mse'])
+    #binary_crossentropy
+    #categorical_crossentropy
+
+    # Fitting the ANN to the Training set
+    classifier.fit(X_train, y_train, validation_data = (X_test, y_test), 
+                   batch_size = 4, nb_epoch = 100, verbose = 2)
+
+    y_pred = classifier.predict(X_test)
+    
+    
+
+    # y_pred = np.argmax(y_pred, axis =1 )
+    # y_pred = y_pred >= 0.5
+    # cm = confusion_matrix(y_test, y_pred)
+    # print(cm)
+
+    # Making the Confusion Matrix
+    # print("acc by ANN model", accuracy_score(y_test, y_pred))
+    from sklearn.metrics import mean_squared_error
+    print(mean_squared_error(y_test, y_pred))
+    import math
+    print(math.sqrt(mean_squared_error(y_test, y_pred)))
+    
+    return y_pred
 
 
 if __name__ == "__main__":
-    knn_pred = knn(X_train, X_test, y_train, y_test)
+    # knn_pred = knn(X_train, X_test, y_train, y_test)
     # ann_pred = ann(X_train, X_test, y_train, y_test)
     # xgBoost_pred = xgBoost(X_train, X_test, y_train, y_test)
     # emsemble(X_train, X_test, y_train, y_test)
-    svm_c(X_train, X_test, y_train, y_test)
-
+    # svm_c(X_train, X_test, y_train, y_test)
+    ann_linear(X_train, X_test, y_train, y_test)
     

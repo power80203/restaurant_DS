@@ -108,7 +108,7 @@ if 0:
             plt.close()
 
 
-if 1:
+if 0:
     for var_temp_user in user_non_numeric:
         # for var_temp_store in store_non_numeric:
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -126,13 +126,53 @@ if 1:
 
 
 
-sys.exit()
+
+plt.show()
+
+if 0:
+    for var_temp_user in user_non_numeric:
+        for var_temp_store in store_non_numeric:
+            g = sns.catplot(x= 'rating', y=  var_temp_user, row= var_temp_store,
+                    kind="violin", orient="h", height = 1.5, aspect=4,
+                    data=df_EDA )               
+            # avg = df_EDA['rating'].mean()
+            plt.xlabel('rating')
+            # plt.ylabel('food_rating')
+            # plt.title('service_rating and in different {0} by rating'.format(var_temp_user))
+            # g.legend(loc='upper left', frameon=False)
+            # plt.legend(bbox_to_anchor=(0.95, 1), loc= 0)
+            # plt.axhline(avg, color='r', linestyle='dashed', linewidth=2) # 繪製平均線
+            plt.savefig('{0}/ {1} and {2} rating_catplot.jpg'.format(config.fig_report_path, var_temp_user, var_temp_store)
+                        ,pad = 0.5)
+            plt.close()
+
+modeling_numeric_list = ['birth_year', 'payment_methods', 'number_of_store_cuisin','cuisine_match',
+                        'num_of_Upayment', 'height']
+
+
+# for i in modeling_numeric_list:    
+#     for var_temp_user in user_non_numeric:
+#         for var_temp_store in store_non_numeric:
+#             fig, ax = plt.subplots(figsize=(10, 8))
+#             sns.scatterplot(x='rating', y= i, 
+#                             hue = var_temp_user, size = var_temp_store, data=df_EDA ,ax=ax) 
+#             plt.xlabel('rating')
+#             plt.savefig('{0}/rating_by_{1}by_{2}by_{3}_scater.jpg'.format(config.fig_report_path, i,var_temp_user, var_temp_store)
+#                         ,pad = 0.5)
+#             plt.close()
+
+
+
+
+
+# 'latitude_x', 'longitude_x', 'latitude_y', 'longitude_y'
 
 fig, ax = plt.subplots(figsize=(10, 8))
-sns.scatterplot(x='latitude_y', y='longitude_y', hue = 'latitude_x', size =  'rating', data=df_EDA ,ax=ax) 
+sns.scatterplot(x='latitude_y', y='longitude_y', hue = 'rating', data=df_EDA ,ax=ax) 
 plt.show()
 
 
+sys.exit()
 
 
 

@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import sys
 from math import sin, cos, sqrt, atan2, radians
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_curve, auc 
+
 
 def computeGeoDistance(lat1, lon1, lat2, lon2):
 
@@ -61,6 +63,25 @@ def confusionMatrix(y_test, y_pred, model_name):
     plt.title(model_name)
     plt.show()
 
+
+def rocCurcve(test_y, test_y_score):
+
+    # Compute ROC curve and ROC area for each class
+    fpr, tpr, threshold = roc_curve(test_y, test_y_score)  
+    roc_auc = auc(fpr, tpr)  
+    
+    lw = 2
+    plt.figure(figsize=(8, 5))
+    plt.plot(fpr, tpr, color='darkorange',
+            lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+    plt.show()
 
 if __name__ == "__main__":
     lat1 = 52.2296756
