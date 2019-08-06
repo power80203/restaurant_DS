@@ -60,7 +60,7 @@ store_non_numeric = ['store_alcohol',
                     'store_smoking_area', 'store_dress_code', 'store_accessibility', 
                     'store_price', 'store_Rambience', 'store_area', 'store_other_services', 'park']
 
-if 0:
+if 1:
 
     for var_temp_user in user_non_numeric:
         for var_temp_store in store_non_numeric:
@@ -125,10 +125,6 @@ if 0:
         plt.close()
 
 
-
-
-plt.show()
-
 if 0:
     for var_temp_user in user_non_numeric:
         for var_temp_store in store_non_numeric:
@@ -163,6 +159,7 @@ modeling_numeric_list = ['birth_year', 'payment_methods', 'number_of_store_cuisi
 
 
 
+sys.exit()
 
 
 # 'latitude_x', 'longitude_x', 'latitude_y', 'longitude_y'
@@ -172,7 +169,6 @@ sns.scatterplot(x='latitude_y', y='longitude_y', hue = 'rating', data=df_EDA ,ax
 plt.show()
 
 
-sys.exit()
 
 
 

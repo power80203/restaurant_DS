@@ -56,13 +56,13 @@ modeling_list = ['smoker', 'drink_level', 'budget', 'store_price',
                 'store_alcohol', #'store_smoking_area',
                 'store_dress_code', #'store_accessibility', 'store_price', 'store_Rambience','franchise',
                 #  'store_area', 'store_other_services', , 
-                'park',
+                'park', 'placeID'
                 ]
 
 target = 'rating'
 
 # add numeric vars
-modeling_numeric_list = ['birth_year', 'latitude_y', 'longitude_y', 'latitude_x', 'longitude_x',
+modeling_numeric_list = ['birth_year',
                         #  'payment_methods',
                           #'number_of_store_cuisin',#'cuisine_match',
                         'num_of_Upayment', 
@@ -94,22 +94,47 @@ print("data after dropping", df_main.shape)
 # one hot encoding
 
 for i in modeling_list:
-    tmp_oneHotEncoding = pd.get_dummies(df_main[i],prefix = i)
-    df_main = df_main.drop(i, axis = 1)
-    df_main = pd.concat([df_main,tmp_oneHotEncoding], axis = 1)
-    print("data shape after join the dummies of %s"%i, df_main.shape)
+    if i != 'placeID':
+        tmp_oneHotEncoding = pd.get_dummies(df_main[i],prefix = i)
+        df_main = df_main.drop(i, axis = 1)
+        df_main = pd.concat([df_main,tmp_oneHotEncoding], axis = 1)
+        print("data shape after join the dummies of %s"%i, df_main.shape)
 
-df_main[target] = df_main[target].apply( lambda x : 0 if x < 2 else 1)
+# df_main[target] = df_main[target].apply( lambda x : 0 if x < 2 else 1)
 
 # start to modeling
 
-y = df_main[target].values
+df_train, df_test = train_test_split(df_main, test_size= 0.3, random_state= 1)
 
-df_main = df_main.drop(target, axis = 1)
+from collections import Counter
 
-x = df_main.values
+train_id = [i for i in Counter(list(df_train['placeID'])).keys()]
+train_f = [i for i in Counter(list(df_train['placeID'])).values()]
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size= 0.3, random_state= 1)
+test_id = [i for i in Counter(list(df_test['placeID'])).keys()]
+test_f = [i for i in Counter(list(df_test['placeID'])).values()]
+
+df_placeID_train = pd.DataFrame({"placeID": train_id, 'frequency' : train_f})
+df_placeID_test = pd.DataFrame({"placeID": test_id, 'frequency' : test_f})
+
+df_train = df_train.merge(df_placeID_train, on =  'placeID', how = 'left')
+df_test = df_test.merge(df_placeID_test, on =  'placeID', how = 'left')
+
+df_train.drop('placeID', axis = 1) ; df_test.drop('placeID', axis = 1)  
+
+y_train = df_train[target].values ; y_test = df_test[target].values
+
+X_train = df_train.values 
+X_test = df_test.values
+
+
+# y = df_main[target].values
+
+# df_main = df_main.drop(target, axis = 1)
+
+# x = df_main.values
+
+# X_train, X_test, y_train, y_test = train_test_split(x, y, test_size= 0.3, random_state= 1)
 
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
@@ -307,7 +332,7 @@ def svm_c(X_train, X_test, y_train, y_test):
     y_predictive_data = model.predict(X_test)
 
     # plot roc
-    utli.rocCurcve(y_test, test_y_score)
+    # utli.rocCurcve(y_test, test_y_score)
     
     print('svm model')
     utli.confusionMatrix(y_test, y_predictive_data, 'svm model')
