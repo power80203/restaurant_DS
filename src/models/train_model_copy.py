@@ -56,7 +56,7 @@ modeling_list = ['smoker', 'drink_level', 'budget',
                  'store_area', 'store_other_services', 'park', 
                 ]
 
-target = 'rating'
+target = 'service_rating'
 
 # add numeric vars
 modeling_numeric_list = ['birth_year', 'payment_methods', 'number_of_store_cuisin','cuisine_match',
@@ -68,6 +68,9 @@ full_list.append(target)
 
 for i in modeling_numeric_list:
     full_list.append(i)
+
+# add id
+full_list.append('userID')
 
 df_main = df_main_ori[full_list]
 
@@ -97,13 +100,24 @@ df_main[target] = df_main[target].apply( lambda x : 0 if x < 2 else 1)
 
 # start to modeling
 
-y = df_main[target].values
+# y = df_main[target].values
 
-df_main = df_main.drop(target, axis = 1)
+# df_main = df_main.drop(target, axis = 1)
 
-x = df_main.values
+# x = df_main.values
 
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size= 0.3, random_state= 1)
+df_train, df_test = train_test_split(df_main, test_size= 0.3, random_state= 1)
+
+id_list_train = df_train['userID'] ; id_list_test = df_test['userID']
+
+y_train = df_train[target].values ; y_test = df_test[target].values
+
+df_train = df_train.drop(target, axis = 1).drop('userID', axis = 1) 
+df_test =df_test.drop(target, axis = 1).drop('userID', axis = 1) 
+
+X_train = df_train.values 
+X_test = df_test.values
+
 
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
@@ -307,8 +321,6 @@ def svm_c(X_train, X_test, y_train, y_test):
     # print(cm)
     print("acc by svm model", accuracy_score(y_test, y_predictive_data))
 
-    return y_predictive_data
-
 def knn(X_train, X_test, y_train, y_test):
 
     cl = KNeighborsClassifier(n_neighbors= 7)
@@ -323,6 +335,13 @@ def knn(X_train, X_test, y_train, y_test):
     print('knn model')
     utli.confusionMatrix(y_test, y_predictive_data, 'knn model')
     print("acc by knn model", accuracy_score(y_test, y_predictive_data))
+
+    print("len of pred is %s"%len(y_predictive_data))
+    print("len of id is %s"%len(id_list_test))
+
+    df_predict = pd.DataFrame({'id' : id_list_test, 'serive_rating_pred':y_predictive_data})
+
+    df_predict.to_csv('%s/predict.csv'%config.interim_data_path, index = False)
 
     return y_predictive_data
     # test
@@ -342,38 +361,21 @@ def knn(X_train, X_test, y_train, y_test):
         print("acc by knn %s model"%number, accuracy_score(y_test, y_predictive_data))
     """
 
-def emsemble(X_train, X_test, y_train, y_test):
-
+def emsemble( list1 , list2, list3, y_test):
     """
+
     ann and xgboost has best result currently
 
     """
-    knn_result = list(knn(X_train, X_test, y_train, y_test))
-    svm_result = list(svm_c(X_train, X_test, y_train, y_test))
-    # xgBoost_result = list(xgBoost(X_train, X_test, y_train, y_test))
-
-    voter_list = [knn_result, svm_result]
 
     result = list()
 
-    for number in range(len(voter_list[0])):
-        sum = 0 
-        for voter in voter_list:
-            sum += voter[number]
-        
-        if sum > 1:
+    for x, y in zip(list1, list2):
+        x = np.argmax(x)
+        if x == 1 or  y == 1:
             result.append(1)
         else:
-            result.append(0)    
-
-    # result = list()
-
-    # for x, y in zip(list1, list2):
-    #     x = np.argmax(x)
-    #     if x == 1 or  y == 1:
-    #         result.append(1)
-    #     else:
-    #         result.append(0)
+            result.append(0)
 
     # result2 = list()
     # for x, y in zip(list3, result):
@@ -387,10 +389,10 @@ def emsemble(X_train, X_test, y_train, y_test):
 
 
 if __name__ == "__main__":
-    # knn_pred = knn(X_train, X_test, y_train, y_test)
+    knn_pred = knn(X_train, X_test, y_train, y_test)
     # ann_pred = ann(X_train, X_test, y_train, y_test)
     # xgBoost_pred = xgBoost(X_train, X_test, y_train, y_test)
-    emsemble(X_train, X_test, y_train, y_test)
+    # emsemble(ann_pred, xgBoost_pred, knn_pred,y_test)
     # svm_c(X_train, X_test, y_train, y_test)
 
     

@@ -224,6 +224,7 @@ def rastaurantDataFactroy():
     df_store_parking = pd.DataFrame({'placeID': id_list,
                                      'park' : park_list})
 
+    df_store_parking.to_csv('%s/df_store_parking.csv'%config.interim_data_path, index = False)
     # merge
 
     df_store = df_store.merge(df_store_parking, on =  'placeID', how = 'left')

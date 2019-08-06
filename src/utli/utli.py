@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from math import sin, cos, sqrt, atan2, radians
+from sklearn.metrics import confusion_matrix
 
 def computeGeoDistance(lat1, lon1, lat2, lon2):
 
@@ -40,6 +41,26 @@ def deal_synonyms(i, dict_synonyms):
     if i.strip() in dict_synonyms:
         i = dict_synonyms[i.strip()]
     return i
+
+
+
+#########################################################
+#  evaluation
+
+def confusionMatrix(y_test, y_pred, model_name):
+
+    cm = confusion_matrix(y_true = y_test, y_pred = y_pred)
+
+    fig, ax = plt.subplots(figsize = (5, 5))
+    ax.matshow(cm, alpha = 0.3, cmap = plt.cm.Blues)
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(x = j, y = i, s = cm[i,j], va = 'center', ha = 'center')
+    plt.xlabel('predicted label')
+    plt.ylabel('true label')
+    plt.title(model_name)
+    plt.show()
+
 
 if __name__ == "__main__":
     lat1 = 52.2296756
