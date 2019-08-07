@@ -15,7 +15,7 @@ and store features. Concretelly, I putted the possible variable together and plo
 relationship by several useful charts such as box plot, corrleation polt, and so on.
 Unfortunately, we didn't found the what we need in EDA stage.
 
-after, I use ensemble method that using KNN, SVM and ANN to generate 
+After that, I used ensemble method that using KNN, SVM and ANN to generate 
 a robust algorithm to give a confident rating when a person want to eat in 
 a new restaurant that she never been to. 
 
