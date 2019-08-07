@@ -60,7 +60,7 @@ store_non_numeric = ['store_alcohol',
                     'store_smoking_area', 'store_dress_code', 'store_accessibility', 
                     'store_price', 'store_Rambience', 'store_area', 'store_other_services', 'park']
 
-if 1:
+if 0:
 
     for var_temp_user in user_non_numeric:
         for var_temp_store in store_non_numeric:
@@ -69,7 +69,7 @@ if 1:
             avg = df_EDA['rating'].mean()
             plt.xlabel(var_temp_user)
             plt.ylabel('rating')
-            plt.title('{1} in different {0} by different {2}'.format(var_temp_user, 'rating',var_temp_store))
+            plt.title('{1} in different {0} and  {2}'.format(var_temp_user, 'rating',var_temp_store))
             # g.legend(loc='upper left', frameon=False)
             plt.legend(bbox_to_anchor=(0.95, 1), loc="upper left")
             plt.axhline(avg, color='r', linestyle='dashed', linewidth=2) # 繪製平均線
@@ -159,17 +159,26 @@ modeling_numeric_list = ['birth_year', 'payment_methods', 'number_of_store_cuisi
 
 
 
-sys.exit()
+
 
 
 # 'latitude_x', 'longitude_x', 'latitude_y', 'longitude_y'
 
-fig, ax = plt.subplots(figsize=(10, 8))
-sns.scatterplot(x='latitude_y', y='longitude_y', hue = 'rating', data=df_EDA ,ax=ax) 
-plt.show()
+# fig, ax = plt.subplots(figsize=(10, 8))
+# sns.scatterplot(x='latitude_y', y='longitude_y', hue = 'rating', data=df_EDA ,ax=ax) 
+# plt.show()
 
-
-
+# fig, ax = plt.subplots(figsize=(10, 8))
+if 1:
+    # fig, ax = plt.subplots(figsize=(10, 8))
+    sns.catplot(x= 'rating', y=  'store_dress_code',
+                        kind="violin", orient="h", height= 2, aspect=4,
+                        data=df_EDA ) 
+    plt.xlabel('rating')
+    plt.title('store_dress_code vs rating')
+    plt.savefig('1233.png', pad = 0.5)
+    plt.show()
+sys.exit()
 
 
 fig, ax = plt.subplots(figsize=(10, 8))
@@ -182,10 +191,8 @@ mask = np.zeros_like(co) # minor mask to filter out a half of vars
 mask[np.triu_indices_from(mask)] = True
 fig, ax = plt.subplots(figsize=(8, 8))
 sns.heatmap(co, mask=mask, vmax=0.5, square=True, annot= True, fmt = '.2f',linewidths = 0.2)
-plt.savefig('%s/dfcorr.jpg'%(config.fig_report_path)
-            ,pad = 0.5)
+plt.savefig('%s/dfcorr.jpg'%(config.fig_report_path),pad = 0.5)
 plt.show()
-
 
 # sns.regplot(x= 'weight', y ='rating',data = df_EDA)
 # plt.show()

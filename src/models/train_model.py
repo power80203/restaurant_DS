@@ -50,14 +50,16 @@ print("original data", df_main_ori.shape)
 
 # ******************** lack operating time
 
+
 modeling_list = ['smoker', 'drink_level', 'budget', 'store_price',
                  'transport', 'marital_status', 'hijos', 'interest', 'personality', 
-                   'activity', #'religion',
+                   'activity', 'religion',
                 'store_alcohol', #'store_smoking_area',
-                'store_dress_code', #'store_accessibility', 'store_price', 'store_Rambience','franchise',
-                #  'store_area', 'store_other_services', , 
+                'store_dress_code', 'store_accessibility',# 'store_price', 'store_Rambience','franchise',
+                 'store_area', 'store_other_services', 
                 'park', 'placeID'
                 ]
+
 
 target = 'rating'
 
@@ -100,19 +102,38 @@ for i in modeling_list:
         df_main = pd.concat([df_main,tmp_oneHotEncoding], axis = 1)
         print("data shape after join the dummies of %s"%i, df_main.shape)
 
-# df_main[target] = df_main[target].apply( lambda x : 0 if x < 2 else 1)
+df_main[target] = df_main[target].apply( lambda x : 0 if x < 2 else 1)
 
 # start to modeling
 
 df_train, df_test = train_test_split(df_main, test_size= 0.3, random_state= 1)
 
-from collections import Counter
+train_id = list()
+df_train_set = set()
+train_f = list()
+test_id = list()
+df_test_set = set()
+test_f = list()
 
-train_id = [i for i in Counter(list(df_train['placeID'])).keys()]
-train_f = [i for i in Counter(list(df_train['placeID'])).values()]
+for i in df_train['placeID'].values:
+    df_train_set.add(i)
 
-test_id = [i for i in Counter(list(df_test['placeID'])).keys()]
-test_f = [i for i in Counter(list(df_test['placeID'])).values()]
+for i in df_train_set:
+    train_f.append(list(df_train['placeID']).count(i))
+    train_id.append(i)
+
+for i in df_test['placeID'].values:
+    df_test_set.add(i)
+
+for i in df_test_set:
+    test_f.append(list(df_test['placeID']).count(i))
+    test_id.append(i)
+
+# train_id = [i for i in Counter(list(df_train['placeID'])).keys()]
+# train_f = [i for i in Counter(list(df_train['placeID'])).values()]
+
+# test_id = [i for i in Counter(list(df_test['placeID'])).keys()]
+# test_f = [i for i in Counter(list(df_test['placeID'])).values()]
 
 df_placeID_train = pd.DataFrame({"placeID": train_id, 'frequency' : train_f})
 df_placeID_test = pd.DataFrame({"placeID": test_id, 'frequency' : test_f})
@@ -123,6 +144,9 @@ df_test = df_test.merge(df_placeID_test, on =  'placeID', how = 'left')
 df_train.drop('placeID', axis = 1) ; df_test.drop('placeID', axis = 1)  
 
 y_train = df_train[target].values ; y_test = df_test[target].values
+
+df_train = df_train.drop(target, axis = 1) ; df_test = df_test.drop(target, axis = 1)
+
 
 X_train = df_train.values 
 X_test = df_test.values
@@ -140,6 +164,21 @@ from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
+
+# from sklearn.decomposition import PCA
+
+# pca = PCA(n_components= 20) 
+
+# print(X_train.shape)
+# print(X_test.shape)
+
+# X_train = pca.fit_transform(X_train)
+# X_test = pca.transform(X_test)
+
+
+print(X_train.shape)
+print(X_test.shape)
+
 
 if False:
     X_train_copy = X_train.copy()
@@ -172,7 +211,7 @@ def ann(X_train, X_test, y_train, y_test):
                                  init = 'uniform', input_dim = input_number, 
                                  ))
                                 #  kernel_regularizer=regularizers.l1(0.1)
-            # classifier.add(Dropout(0.1))
+            classifier.add(Dropout(0.1))
 
         input_number = int(input_number / dacay)
 
@@ -185,8 +224,9 @@ def ann(X_train, X_test, y_train, y_test):
     # earlystopper = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15)
 
     # Compiling the ANN
+    # RMSprop 
     SGD = keras.optimizers.SGD(lr = 0.1, momentum=0.0, decay=0.0, nesterov=False)
-    classifier.compile(optimizer = 'RMSprop', loss = 'binary_crossentropy', 
+    classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', 
                     metrics = ['accuracy'])
     #binary_crossentropy
     #categorical_crossentropy
@@ -195,12 +235,11 @@ def ann(X_train, X_test, y_train, y_test):
     classifier.fit(X_train, y_train, validation_data = (X_test, y_test), 
                    batch_size = 4, nb_epoch = 100, verbose = 2)
 
-    y_pred = classifier.predict(X_test)
-    
-    
+    y_pred = classifier.predict(X_test)   
 
     # y_pred = np.argmax(y_pred, axis =1 )
     y_pred = y_pred >= 0.5
+
     # cm = confusion_matrix(y_test, y_pred)
     # print(cm)
 
@@ -332,7 +371,7 @@ def svm_c(X_train, X_test, y_train, y_test):
     y_predictive_data = model.predict(X_test)
 
     # plot roc
-    # utli.rocCurcve(y_test, test_y_score)
+    utli.rocCurcve(y_test, test_y_score)
     
     print('svm model')
     utli.confusionMatrix(y_test, y_predictive_data, 'svm model')
@@ -420,10 +459,10 @@ def emsemble(X_train, X_test, y_train, y_test):
 
 
 if __name__ == "__main__":
-    knn_pred = knn(X_train, X_test, y_train, y_test)
+    # knn_pred = knn(X_train, X_test, y_train, y_test)
     # ann_pred = ann(X_train, X_test, y_train, y_test)
     # xgBoost_pred = xgBoost(X_train, X_test, y_train, y_test)
-    # emsemble(X_train, X_test, y_train, y_test)
-    svm_c(X_train, X_test, y_train, y_test)
+    emsemble(X_train, X_test, y_train, y_test)
+    # svm_c(X_train, X_test, y_train, y_test)
 
     

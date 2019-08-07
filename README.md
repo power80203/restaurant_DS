@@ -1,7 +1,23 @@
-restaurant_DS
+restaurant_DS Project
 ==============================
 
-implementation of user rating
+data set: Restaurant & consumer data Data Set 
+data resource: https://archive.ics.uci.edu/ml/datasets/Restaurant+%26+consumer+data
+
+implementation a useful algorithm of simple recommender system
+
+Cleaning , extracting, generating the entrie data set is 1st setp.
+I was going to merged or append that 9 csv files during so-called ETL process 
+before I started to implement EDA stage.
+
+during EDA stage, seeking for critical feature through exploring data by user features 
+and store features. Concretelly, I putted the possible variable together and plotted the
+relationship by several useful charts such as box plot, corrleation polt, and so on.
+Unfortunately, we didn't found the what we need in EDA stage.
+
+after, I use ensemble method that using KNN, SVM and ANN to generate 
+a robust algorithm to give a confident rating when a person want to eat in 
+a new restaurant that she never been to. 
 
 Project Organization
 ------------
